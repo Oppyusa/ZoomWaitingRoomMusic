@@ -10,3 +10,9 @@ Original: Eric Golde
 Custom Music: Oppyusa
 
 [[Click here to download]](https://github.com/Oppyusa/ZoomWaitingRoomMusic/releases)
+
+## Requirements 
+
+- Java Runtime Environment (JRE) 15
+- Windows, Linux, or Mac
+- Zoom (duh)
