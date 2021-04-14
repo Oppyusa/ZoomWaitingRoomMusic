@@ -5,9 +5,9 @@ import java.awt.MenuItem;
 import java.awt.PopupMenu;
 import java.awt.SystemTray;
 import java.awt.TrayIcon;
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -31,9 +31,9 @@ public class Main {
 	public static void main(String[] args) throws IOException, UnsupportedAudioFileException, LineUnavailableException {
 
 		initSystemTray();
-		
+
 		Clip clip = initMusicPlayback();
-		
+
 		Timer timer = new Timer();
 
 		timer.scheduleAtFixedRate(new TimerTask() {
@@ -45,7 +45,7 @@ public class Main {
 			}
 		}, 0, 500);
 
-		
+
 		while(true) {
 			try {
 				Thread.sleep(1000);
@@ -60,16 +60,27 @@ public class Main {
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
+				break;
 			}
 		}
 
 	}
-	
+
+
+	static String path = System.getProperty("user.home") + File.separator + "ZoomWaitingRoomMusic";
+	static File folder = new File(path);
+	static File music = new File(path + File.separator + "music.wav");
+
 	private static Clip initMusicPlayback() throws LineUnavailableException, IOException, UnsupportedAudioFileException {
-		InputStream audioSrc = Main.class.getResourceAsStream("/res/music.wav");
+		if (!folder.exists()) {
+			folder.mkdir();
+		}
+		if (!music.exists()) {
+			Files.copy(Main.class.getResourceAsStream("res/music.wav"), Paths.get(music.getAbsolutePath()));
+		}		InputStream audioSrc = new FileInputStream(music);
 		InputStream bufferedIn = new BufferedInputStream(audioSrc);
 		AudioInputStream audioStream = AudioSystem.getAudioInputStream(bufferedIn);
-		
+
 		Clip clip = AudioSystem.getClip();
 		clip.open(audioStream);
 		clip.loop(Clip.LOOP_CONTINUOUSLY);
@@ -78,29 +89,29 @@ public class Main {
 	}
 
 	private static void initSystemTray() throws IOException {
-		  if (SystemTray.isSupported()) {
-		    SystemTray tray = SystemTray.getSystemTray();
-		    PopupMenu menu = new PopupMenu();
-		    MenuItem exitItem = new MenuItem("Exit");
-		    exitItem.addActionListener(a -> System.exit(0));
-		    menu.add(exitItem);
+		if (SystemTray.isSupported()) {
+			SystemTray tray = SystemTray.getSystemTray();
+			PopupMenu menu = new PopupMenu();
+			MenuItem exitItem = new MenuItem("Exit");
+			exitItem.addActionListener(a -> System.exit(0));
+			menu.add(exitItem);
 
-		    
-		    Image trayImage = ImageIO.read(Main.class.getResourceAsStream("res/icon.png"));
-		    Dimension trayIconSize = tray.getTrayIconSize();
-		    trayImage = trayImage.getScaledInstance(trayIconSize.width, trayIconSize.height, Image.SCALE_SMOOTH);
-		    
-		    TrayIcon trayIcon = new TrayIcon(trayImage, "Zoom Waiting Music", menu);
-		    trayIcon.setImageAutoSize(true);
-		    try {
-		      tray.add(trayIcon);
-		    } 
-		    catch (AWTException e) {
-		      e.printStackTrace();
-		    }
-		  }
+
+			Image trayImage = ImageIO.read(Main.class.getResourceAsStream("res/icon.png"));
+			Dimension trayIconSize = tray.getTrayIconSize();
+			trayImage = trayImage.getScaledInstance(trayIconSize.width, trayIconSize.height, Image.SCALE_SMOOTH);
+
+			TrayIcon trayIcon = new TrayIcon(trayImage, "Zoom Waiting Music", menu);
+			trayIcon.setImageAutoSize(true);
+			try {
+				tray.add(trayIcon);
+			}
+			catch (AWTException e) {
+				e.printStackTrace();
+			}
 		}
-	
+	}
+
 	private static void areWeStillWaitingForHost() {
 		final CustomUser32 user32 = CustomUser32.INSTANCE;
 
